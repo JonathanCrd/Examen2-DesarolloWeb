@@ -38,11 +38,75 @@ de mas de 470,000 piezas de arte de su colección
 y estos datasets estan disponibles a través de su RESTful API.
 Estos datasets pueden ser utilizados sin necesidad de un permiso y sin costo.
 */
+const request = require('request')
+const MET = require('./met.js')
 
 app.get('/met',function(req,res){
   if( !req.query.search ) {
     return res.send({
-      error: 'Tienes que dar una peli o serie a buscar'
+      error: 'Tienes que dar un objeto a buscar'
     })
   }
+
+  MET.searchObject(req.query.search,function(error, response){
+    if(error) {
+      return res.send({
+        error: error
+      })
+    }
+    else {
+      //Encontro algo, ahora busca los datos de ese objeto
+      getObjectByID(response, function(error, response){
+        if(error){
+          return res.send({
+            error: error
+          });
+        }
+        //Todo bien, ahora agregar el termino de busqueda
+        let data ={
+          searchTerm: req.query.search,
+          artist : response.artist,
+          title: response.title,
+          year: response.year,
+          technique: response.technique,
+          metUrl: response.metUrl
+        };
+
+        //Regresa el json Final
+        return res.send(data);
+      });
+    }
+  });
+
 });
+
+
+function getObjectByID(objectID,callback){
+  const url = 'https://collectionapi.metmuseum.org/public/collection/v1/objects/'+objectID.objectID;
+
+  request({ url, json: true }, function(error, response) {
+    if(error){
+      callback(error,undefined);
+    }
+
+    let body = response.body;
+
+    //Formatear la salida
+    const data = {
+      artist : body.constituents[0].name,
+      title: body.title,
+      year: body.objectEndDate,
+      technique: body.medium,
+      metUrl: body.objectURL
+    };
+    callback(undefined,data)
+
+  })
+}
+
+//5.- Cachar todas las demás rutas no válidas...
+app.get('*', function(req, res) {
+  res.send({
+    error: 'Ups, el examen no pedia hacer esto.'
+  })
+})
