@@ -32,6 +32,13 @@ app.get('/students/:id', function(req, res) {
   }
 });
 
+//Para el caso en que no de matricula
+app.get('/students/', function(req, res) {
+    res.send({
+      error: "Debes dar una matrícula como parametro (/A0XXXXXXX)."
+    })
+});
+
 /* 4
 (60 puntos) El Museo Metropolitano de Arte cuenta con datasets de información
 de mas de 470,000 piezas de arte de su colección
