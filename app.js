@@ -104,6 +104,14 @@ function getObjectByID(objectID,callback){
   })
 }
 
+//PUNTOS EXTRAS (NUEVAS RUTAS)
+//Voy a hacer un index.html para la ruta default (/)
+const path = require('path')
+const publicDir = path.join(__dirname, 'public')
+app.use(express.static(publicDir))
+
+//////FIN DE PUNTOS EXTRAS
+
 //5.- Cachar todas las demás rutas no válidas...
 app.get('*', function(req, res) {
   res.send({
